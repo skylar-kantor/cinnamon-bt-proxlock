@@ -3,6 +3,9 @@ import sys
 import subprocess as sp
 import time
 import os
+import dbus, dbus.mainloop.glib, sys
+from gi.repository import GLib
+import tkinter as tk
 
 
 
@@ -19,6 +22,8 @@ def fileReplacePart(dest, toWrite, toKeep, toReplace):
         else:
             read.write(keep + "\n" + toWrite)
         read.close()
+
+
 
 if(len(sys.argv) > 1):
     if sys.argv[1] == "setmac":
@@ -44,13 +49,22 @@ configLines = configFile.readlines()
 deviceMAC = configLines[0].strip()
 lockDelay = int(configLines[1])
 configFile.close()
-locked = False
 
+locked = False
+connected = False
+playerInitialized = False
+
+os.system('nohup ./media_control.py')
 while (True):
     btcon = sp.getoutput("hcitool con")
+    if not (deviceMAC in btcon):
+        connected = False
+    elif (deviceMAC in btcon):
+        connected = True
     if not (deviceMAC in btcon) and locked == False:
         time.sleep(lockDelay/1000)
         locked = True
+        
         os.popen('cinnamon-screensaver-command --lock')
     elif deviceMAC in btcon and locked == True:
         os.popen('cinnamon-screensaver-command -d')
@@ -58,11 +72,8 @@ while (True):
 
 
 
-
-
     
     
-
 
 
 
